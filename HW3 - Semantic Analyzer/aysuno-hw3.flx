@@ -1,0 +1,86 @@
+%{
+#include "aysuno-hw3.h"
+#include "aysuno-hw3.tab.h" 
+#include <string.h>
+int line = 1;
+%}
+%%
+
+"\n"            {
+                    line++;
+                }
+
+['][^']*[']		{
+
+    			int a = 0;
+                    for(a = 0; a < yyleng; a++){
+                        if(yytext[a] == '\n'){
+                            line += 1;
+                        }
+                }
+                int b = 0;
+                char *result;
+                yytext[yyleng-1]='\0';
+                result = (char*)malloc(yyleng);
+                for (b = 0; yytext[b] != '\0'; b++) {
+                    result[b] = yytext[b+1];
+                }
+                yylval.text_value = result;
+                return tSTRING;
+
+                }
+
+["]Get["]		    return tGET;
+["]Set["]		    return tSET;
+["]Function["]		return tFUNCTION;
+["]Print["]		    return tPRINT;
+["]If["]		    return tIF;
+["]Return["]		return tRETURN;
+
+["]"+"["]       {
+                    yylval.unLine = line;
+                    return tADD;
+                }    
+["]"-"["]       {
+                    yylval.unLine = line;
+                    return tSUB;
+                }       
+["]"*"["]       {
+                    yylval.unLine = line;
+                    return tMUL;
+                }         
+["]"/"["]       {
+                    yylval.unLine = line;
+                    return tDIV;
+                } 
+     
+["]"++"["]		return tINC;
+["]">"["]		return tGT;
+["]"=="["]		return tEQUALITY;
+["]"--"["]		return tDEC;
+["]"<"["]		return tLT;
+["]"<="["]		return tLEQ;
+["]">="["]		return tGEQ;
+
+
+["][_a-zA-Z][a-zA-Z0-9_]*["]	return tIDENT;
+				
+[0-9]+ |
+-[0-9]+                {
+                            yylval.intnode.isFloat = 0; //as a bool
+                            yylval.intnode.value = atoi(yytext);
+                            return tNUM; 
+                       }	
+
+
+[0-9]+"."[0-9]+ |
+-[0-9]+"."[0-9]+ 	    {
+                            yylval.intnode.isFloat = 1;
+                            yylval.intnode.value = atof(yytext); //declare to the new variable
+                            return tNUM;
+                        } 
+	
+[ \t\r]+ 
+.			            return yytext[0];
+
+%%
